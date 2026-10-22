@@ -8,6 +8,8 @@ import com.coxautodev.graphql.tools.GraphQLRootResolver;
 
 // Import the entity class representing a Teaching Unit (Unité d’Enseignement)
 import entities.UniteEnseignement;
+import business.ModuleBusiness;
+import entities.Module;
 
 /**
  * This class defines all GraphQL mutations related to the "UniteEnseignement" entity.
@@ -18,6 +20,7 @@ public class MutationResolver implements GraphQLRootResolver {
 
     // Attribute used to access the business logic (service layer)
     public UniteEnseignementBusiness helper;
+    private ModuleBusiness moduleHelper;
 
     /**
      * Constructor of the resolver.
@@ -25,6 +28,7 @@ public class MutationResolver implements GraphQLRootResolver {
      */
     public MutationResolver() {
         helper = new UniteEnseignementBusiness();
+        moduleHelper = new ModuleBusiness();
     }
 
     /**
@@ -53,5 +57,90 @@ public class MutationResolver implements GraphQLRootResolver {
         // Call the business logic method to add the new unit
         // The helper handles the actual persistence or logic of adding the entity
         return helper.addUniteEnseignement(ue);
+    }
+    public boolean updateUniteEnseignement(
+            int code,
+            String domaine,
+            String responsable,
+            int credits,
+            int semestre) {
+
+        UniteEnseignement updatedUE = new UniteEnseignement(
+                code, domaine, responsable, credits, semestre
+        );
+
+        return helper.updateUniteEnseignement(code, updatedUE);
+    }
+
+    // Supprimer une unite d'enseignement
+    public boolean deleteUniteEnseignement(int code) {
+        return helper.deleteUniteEnseignement(code);
+    }
+
+    // Ajouter un module
+    public boolean addModule(
+            String matricule,
+            String nom,
+            int coefficient,
+            int volumeHoraire,
+            String type,
+            int codeUE) {
+
+        UniteEnseignement ue = helper.getUEByCode(codeUE);
+
+        if (ue == null) {
+            return false;
+        }
+
+        try {
+            Module.TypeModule typeModule =
+                    Module.TypeModule.valueOf(type.toUpperCase());
+
+            Module module = new Module(
+                    matricule, nom, coefficient,
+                    volumeHoraire, typeModule, ue
+            );
+
+            return moduleHelper.addModule(module);
+
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    // Modifier un module
+    public boolean updateModule(
+            String matricule,
+            String nom,
+            int coefficient,
+            int volumeHoraire,
+            String type,
+            int codeUE) {
+
+        UniteEnseignement ue = helper.getUEByCode(codeUE);
+
+        if (ue == null) {
+            return false;
+        }
+
+        try {
+            Module.TypeModule typeModule =
+                    Module.TypeModule.valueOf(type.toUpperCase());
+
+            Module updatedModule = new Module(
+                    matricule, nom, coefficient,
+                    volumeHoraire, typeModule, ue
+            );
+
+            return moduleHelper.updateModule(matricule, updatedModule);
+
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    // Supprimer un module
+    public boolean deleteModule(String matricule) {
+        return moduleHelper.deleteModule(matricule);
     }
 }

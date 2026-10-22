@@ -10,6 +10,9 @@ import com.coxautodev.graphql.tools.GraphQLRootResolver;
 import entities.UniteEnseignement;
 
 import java.util.List;
+import business.ModuleBusiness;
+import entities.Module;
+import java.util.Collections;
 
 /**
  * This class acts as the root resolver for GraphQL queries.
@@ -21,13 +24,14 @@ public class QueryResolver implements GraphQLRootResolver {
 
     // Attribute used to call the business logic layer (service) for data operations
     public UniteEnseignementBusiness helper;
-
+    private ModuleBusiness moduleHelper;
     /**
      * Constructor of the resolver.
      * It initializes the business helper that provides methods to retrieve UE data.
      */
     public QueryResolver(){
         helper = new UniteEnseignementBusiness();
+        moduleHelper = new ModuleBusiness();
     }
 
     /**
@@ -52,5 +56,41 @@ public class QueryResolver implements GraphQLRootResolver {
         // Delegates the request to the business layer method getListeUE()
         // which fetches all UE entities (e.g., from a database or a static list)
         return helper.getListeUE();
+    }
+    public UniteEnseignement ueByCode(int code) {
+        return helper.getUEByCode(code);
+    }
+
+    //Recuperer les UE par domaine
+    public List<UniteEnseignement> uesByDomaine(String domaine) {
+        return helper.getUEByDomaine(domaine);
+    }
+
+    //Recuperer les UE par semestre
+    public List<UniteEnseignement> uesBySemestre(int semestre) {
+        return helper.getUEBySemestre(semestre);
+    }
+
+    //Recuperer tous les modules
+    public List<Module> allModules() {
+        return moduleHelper.getAllModules();
+    }
+
+    //Recuperer les modules par type
+    public List<Module> modulesByType(String type) {
+        try {
+            Module.TypeModule typeModule =
+                    Module.TypeModule.valueOf(type.toUpperCase());
+
+            return moduleHelper.getModulesByType(typeModule);
+
+        } catch (IllegalArgumentException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    //Recuperer un module par matricule
+    public Module moduleByMatricule(String matricule) {
+        return moduleHelper.getModuleByMatricule(matricule);
     }
 }
